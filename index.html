@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Webshop Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">D</div>
+          <div>
+            <p class="eyebrow">Dashboard</p>
+            <h1>DataWebshop</h1>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <button class="nav-item active">Overview</button>
+          <button class="nav-item">Sales</button>
+          <button class="nav-item">Orders</button>
+          <button class="nav-item">Customers</button>
+          <button class="nav-item">Products</button>
+          <button class="nav-item">Reports</button>
+        </nav>
+
+        <div class="sidebar-card">
+          <p class="eyebrow">Performance</p>
+          <strong>82.4%</strong>
+          <span>conversion rate</span>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Overview</p>
+            <h2>Revenue dashboard</h2>
+          </div>
+
+          <div class="topbar-controls">
+            <div class="range-picker">
+              <button class="range-btn active" data-range="7">7D</button>
+              <button class="range-btn" data-range="30">30D</button>
+              <button class="range-btn" data-range="90">90D</button>
+            </div>
+            <button class="primary-btn">Export</button>
+          </div>
+        </header>
+
+        <section class="stats-grid">
+          <article class="stat-card accent-blue">
+            <p>Total revenue</p>
+            <h3 data-metric="revenue">€84,240</h3>
+            <span class="delta positive">+12.4% vs last period</span>
+          </article>
+
+          <article class="stat-card accent-green">
+            <p>Orders</p>
+            <h3 data-metric="orders">1,284</h3>
+            <span class="delta positive">+8.1% vs last period</span>
+          </article>
+
+          <article class="stat-card accent-purple">
+            <p>Avg. order value</p>
+            <h3 data-metric="aov">€65.60</h3>
+            <span class="delta positive">+5.7% vs last period</span>
+          </article>
+
+          <article class="stat-card accent-orange">
+            <p>Visitors</p>
+            <h3 data-metric="visitors">42,890</h3>
+            <span class="delta negative">-1.2% vs last period</span>
+          </article>
+        </section>
+
+        <section class="content-grid">
+          <div class="panel chart-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Sales</p>
+                <h3>Monthly revenue</h3>
+              </div>
+              <span class="chip">Live</span>
+            </div>
+
+            <div class="bar-chart" aria-label="Revenue chart">
+              <div class="bar-group"><span class="bar" style="--value: 42%"></span><label>Jan</label></div>
+              <div class="bar-group"><span class="bar" style="--value: 58%"></span><label>Feb</label></div>
+              <div class="bar-group"><span class="bar" style="--value: 65%"></span><label>Mar</label></div>
+              <div class="bar-group"><span class="bar" style="--value: 78%"></span><label>Apr</label></div>
+              <div class="bar-group"><span class="bar" style="--value: 70%"></span><label>May</label></div>
+              <div class="bar-group"><span class="bar" style="--value: 88%"></span><label>Jun</label></div>
+              <div class="bar-group"><span class="bar" style="--value: 95%"></span><label>Jul</label></div>
+            </div>
+          </div>
+
+          <div class="panel table-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Top</p>
+                <h3>Best products</h3>
+              </div>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Units</th>
+                  <th>Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Wireless Headset</td>
+                  <td>482</td>
+                  <td>€12,460</td>
+                </tr>
+                <tr>
+                  <td>Smart Watch</td>
+                  <td>321</td>
+                  <td>€10,940</td>
+                </tr>
+                <tr>
+                  <td>Desk Lamp</td>
+                  <td>275</td>
+                  <td>€8,880</td>
+                </tr>
+                <tr>
+                  <td>Bluetooth Speaker</td>
+                  <td>239</td>
+                  <td>€7,330</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="bottom-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Store</p>
+                <h3>Popular products</h3>
+              </div>
+            </div>
+
+            <div class="product-grid">
+              <article class="product-card">
+                <div class="product-image image-one"></div>
+                <h4>Noise Cancelling Earbuds</h4>
+                <div class="product-meta">
+                  <span>€149</span>
+                  <button>Add to cart</button>
+                </div>
+              </article>
+
+              <article class="product-card">
+                <div class="product-image image-two"></div>
+                <h4>Smart Home Hub</h4>
+                <div class="product-meta">
+                  <span>€239</span>
+                  <button>Add to cart</button>
+                </div>
+              </article>
+
+              <article class="product-card">
+                <div class="product-image image-three"></div>
+                <h4>Ergo Chair</h4>
+                <div class="product-meta">
+                  <span>€389</span>
+                  <button>Add to cart</button>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div class="panel summary-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Quick</p>
+                <h3>Summary</h3>
+              </div>
+            </div>
+
+            <div class="summary-list">
+              <div class="summary-row">
+                <span>Returning customers</span>
+                <strong>68%</strong>
+              </div>
+              <div class="summary-row">
+                <span>Average basket</span>
+                <strong>€92</strong>
+              </div>
+              <div class="summary-row">
+                <span>Repeat purchase</span>
+                <strong>43%</strong>
+              </div>
+              <div class="summary-row">
+                <span>Cart abandonment</span>
+                <strong>21%</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+
