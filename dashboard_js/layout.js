@@ -63,6 +63,12 @@
       ul.appendChild(li);
     });
     ed.appendChild(ul);
+    // voor het bureau: de huidige indeling als instelling om in de config te plakken (indeling_standaard), zodat niemand de titels hoeft op te zoeken
+    var setting = {}; setting[S.view] = {}; setting[S.view][S.style] = { volgorde: titles, verborgen: titles.filter(function (t) { return hidden.indexOf(t) >= 0; }) };
+    var lab2 = el("label", "ly-export", U.ly_export); lab2.setAttribute("for", "ly-setting");
+    var ta = el("textarea", "ly-setting"); ta.id = "ly-setting"; ta.readOnly = true; ta.rows = 4; ta.value = JSON.stringify(setting, null, 1);
+    ta.addEventListener("focus", function () { ta.select(); });
+    ed.appendChild(lab2); ed.appendChild(ta); ed.appendChild(note(U.ly_export_note));
     var row = el("div", "exrow");
     var reset = el("button", "xb", U.ly_reset); reset.type = "button"; reset.addEventListener("click", function () { resetLayout(); EDIT_FOCUS = "ly-reset"; renderContent(); });
     reset.id = "ly-reset";
