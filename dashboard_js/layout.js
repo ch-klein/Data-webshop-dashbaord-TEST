@@ -11,8 +11,11 @@
     var v = null;
     try { v = JSON.parse(window.localStorage.getItem(layoutKey()) || "null"); } catch (e) { v = null; }
     if (!v && MEM_LAYOUT[layoutKey()]) v = MEM_LAYOUT[layoutKey()];
+    if (!v) v = bureauLayout();
     return v && Array.isArray(v.order) && Array.isArray(v.hidden) ? v : null;
   }
+  // de standaardindeling die het bureau voor deze klant heeft ingesteld (de eigen keuze van de bezoeker gaat voor; "herstellen" brengt hem hier terug)
+  function bureauLayout() { var l = D.layout_default && D.layout_default[S.view]; return l && l[S.style] ? l[S.style] : null; }
   function saveLayout(order, hidden) {
     MEM_LAYOUT[layoutKey()] = { order: order, hidden: hidden };
     try { window.localStorage.setItem(layoutKey(), JSON.stringify({ order: order, hidden: hidden })); } catch (e) { /* opslag niet beschikbaar: het geheugen van de pagina blijft */ }

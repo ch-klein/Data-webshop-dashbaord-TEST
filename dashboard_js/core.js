@@ -49,6 +49,12 @@
         return !have[ym] || !nums(m, ["rev", "known", "cost"]) || !Array.isArray(m.rows) || m.rows.some(function (r) { return !Array.isArray(r) || r.length !== 4 || typeof r[0] !== "string" || !num(r[1]) || !num(r[2]) || !(r[3] === null || num(r[3])); });
       });
     }
+    var ld = d.layout_default;
+    if (ld !== undefined) {
+      var titles = function (x) { return Array.isArray(x) && x.length <= 30 && x.every(function (t, i) { return typeof t === "string" && t.trim() && t.length <= 80 && x.indexOf(t) === i; }); };
+      if (!obj(ld) || !Array.isArray(d.styles)) return true;
+      return Object.keys(ld).some(function (v) { return !obj(ld[v]) || Object.keys(ld[v]).some(function (n) { var x = ld[v][n]; return d.styles.indexOf(n) < 0 || !obj(x) || !titles(x.order) || !titles(x.hidden); }); });
+    }
     return false;
   }
   var FALLBACK = { schema: "This dashboard was made with another version of the data format. Please generate it again.", data: "The data of this dashboard is incomplete or damaged. Please generate it again." };
