@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; font-src data:; style-src 'sha256-wTCPp9EGYqGmi0ej5ncBSJ5hKTFx9IuQCtGtWzcFGpI='; script-src 'sha256-hInPMx3seCmWU97/SWBnwB+t4ommSVD3lxEW9wbrixE='; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; font-src data:; style-src 'sha256-wTCPp9EGYqGmi0ej5ncBSJ5hKTFx9IuQCtGtWzcFGpI='; script-src 'sha256-0U3vvlvNPbQE9++b4m8cc228Cd0KzNke+OtzVq+YkSE='; base-uri 'none'; form-action 'none'">
 <meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
 <title>Demo Fietsenwinkel (voorbeeld) · Dashboard</title>
 <style>/* Dashboard (lay-out: donkere zijbalk, topbalk, tegels met pictogram, panelen met uitklapknop). Kleuren komen als variabelen uit het thema. */
@@ -333,6 +333,12 @@ html[data-style="donker"]{color-scheme:dark;--page:#0b0a1f;--card:#161334;--text
         var m = sp.months[ym];
         return !have[ym] || !nums(m, ["rev", "known", "cost"]) || !Array.isArray(m.rows) || m.rows.some(function (r) { return !Array.isArray(r) || r.length !== 4 || typeof r[0] !== "string" || !num(r[1]) || !num(r[2]) || !(r[3] === null || num(r[3])); });
       });
+    }
+    var ld = d.layout_default;
+    if (ld !== undefined) {
+      var titles = function (x) { return Array.isArray(x) && x.length <= 30 && x.every(function (t, i) { return typeof t === "string" && t.trim() && t.length <= 80 && x.indexOf(t) === i; }); };
+      if (!obj(ld) || !Array.isArray(d.styles)) return true;
+      return Object.keys(ld).some(function (v) { return !obj(ld[v]) || Object.keys(ld[v]).some(function (n) { var x = ld[v][n]; return d.styles.indexOf(n) < 0 || !obj(x) || !titles(x.order) || !titles(x.hidden); }); });
     }
     return false;
   }
@@ -2761,8 +2767,11 @@ html[data-style="donker"]{color-scheme:dark;--page:#0b0a1f;--card:#161334;--text
     var v = null;
     try { v = JSON.parse(window.localStorage.getItem(layoutKey()) || "null"); } catch (e) { v = null; }
     if (!v && MEM_LAYOUT[layoutKey()]) v = MEM_LAYOUT[layoutKey()];
+    if (!v) v = bureauLayout();
     return v && Array.isArray(v.order) && Array.isArray(v.hidden) ? v : null;
   }
+  // de standaardindeling die het bureau voor deze klant heeft ingesteld (de eigen keuze van de bezoeker gaat voor; "herstellen" brengt hem hier terug)
+  function bureauLayout() { var l = D.layout_default && D.layout_default[S.view]; return l && l[S.style] ? l[S.style] : null; }
   function saveLayout(order, hidden) {
     MEM_LAYOUT[layoutKey()] = { order: order, hidden: hidden };
     try { window.localStorage.setItem(layoutKey(), JSON.stringify({ order: order, hidden: hidden })); } catch (e) { /* opslag niet beschikbaar: het geheugen van de pagina blijft */ }
