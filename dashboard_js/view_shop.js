@@ -153,12 +153,19 @@
   }
   function ppDiff(x) { return (x >= 0 ? "+" : "\u2212") + Math.abs(x).toLocaleString(LOC, { minimumFractionDigits: 1, maximumFractionDigits: 1 }); }
   // winst per product: orderregels en inkoopprijzen van de klant; alleen brutowinst, en alleen over de omzet waarvan de inkoopprijs bekend is
+  // de betaalkosten van een maand, of null als die niet bekend zijn (geen bestand, of zonder kosten)
+  function monthFees(ym) {
+    var m = D.payments ? D.payments[ym] : null, t = 0; if (!m) return null;
+    for (var n in m) { if (m[n][3] === null) return null; t += m[n][3]; }
+    return t;
+  }
   function profitSum(months) {
-    var t = { rev: 0, known: 0, cost: 0, ads: 0, prod: {} };
+    var t = { rev: 0, known: 0, cost: 0, ads: 0, adMonths: 0, fees: 0, feeMonths: 0, prod: {} };
     months.forEach(function (ym) {
       var m = D.shop_profit.months[ym]; if (!m) return;
       t.rev += m.rev; t.known += m.known; t.cost += m.cost;
-      if (D.ads && D.ads[ym]) t.ads += D.ads[ym].t[0];
+      if (D.ads && D.ads[ym]) { t.ads += D.ads[ym].t[0]; t.adMonths++; }
+      var f = monthFees(ym); if (f !== null) { t.fees += f; t.feeMonths++; }
       m.rows.forEach(function (r) { var p = t.prod[r[0]] = t.prod[r[0]] || { items: 0, rev: 0, cost: 0, unknown: 0 }; p.items += r[1]; p.rev += r[2]; if (r[3] === null) p.unknown += r[2]; else p.cost += r[3]; });
     });
     return t;
@@ -179,8 +186,11 @@
       var list = [[U.pr_k_profit, A.known - A.cost, B && B.known - B.cost, eur], [U.pr_k_margin, margin(A), B && B.known ? margin(B) : null, p1], [U.pr_k_cover, cov, B && B.rev ? cover(B) : null, function (x) { return pct(x, 0); }]];
       var adsOk = A.ads > 0 && cov >= 90;
       if (adsOk) list.push([U.pr_k_after_ads, A.known - A.cost - A.ads, B && B.ads > 0 ? B.known - B.cost - B.ads : null, eur]);
+      var allOk = adsOk && A.adMonths === al.a.length && A.feeMonths === al.a.length, allB = B && B.adMonths === al.b.length && B.feeMonths === al.b.length;
+      if (allOk) list.push([U.pr_k_after_all, A.known - A.cost - A.ads - A.fees, allB ? B.known - B.cost - B.ads - B.fees : null, eur]);
       kc.appendChild(shopKpis(k, list));
       kc.appendChild(note(U.pr_scope));
+      if (allOk) kc.appendChild(note(U.pr_all_note));
       if (A.ads > 0 && !adsOk) kc.appendChild(note(U.pr_ads_cover));
       if (cov < 100) kc.appendChild(note(U.pr_cover_note.replace("{p}", pct(cov, 0))));
       content.appendChild(kc);
@@ -201,6 +211,13 @@
           }), null));
           cc.appendChild(note(U.pr_ch_note)); content.appendChild(cc);
         }
+      }
+      if (allOk) {
+        var after = function (ym) { var m = P.months[ym], ad = D.ads && D.ads[ym] ? D.ads[ym].t[0] : null, fe = monthFees(ym); return m && m.known && ad !== null && fe !== null ? m.known - m.cost - ad - fe : null; };
+        var neg = al.a.filter(function (ym) { var v = after(ym); return v !== null && v < 0; }).length;
+        var ac = el("section", "card"); ac.appendChild(panelHead(U.pr_h_after_all)); content.appendChild(ac);
+        ac.appendChild(monthChart(k, "s", after, eur, U.pr_h_after_all));
+        if (neg) ac.appendChild(note(U.pr_neg_months.replace("{n}", neg).replace("{t}", al.a.length)));
       }
       var tc = el("section", "card"); tc.appendChild(panelHead(U.pr_h_trend)); content.appendChild(tc);
       var holder = el("div"); tc.appendChild(holder);
@@ -223,6 +240,8 @@
     if (D.funnel) tabs.push("funnel");
     if (D.product_funnel || D.shop_lines) tabs.push("products");
     if (D.coupons) tabs.push("coupons");
+    if (D.stock) tabs.push("stock");
+    if (D.payments) tabs.push("payments");
     if (D.shop && shopHasReturns()) tabs.push("returns", "customers");
     if (D.shop_profit) tabs.push("profit");
     if (tabs.indexOf(SHOP_TAB) < 0) SHOP_TAB = tabs[0];
@@ -240,6 +259,8 @@
     if (SHOP_TAB === "funnel") { shopFunnel(content, k); return; }
     if (SHOP_TAB === "products") { shopProducts(content, k); return; }
     if (SHOP_TAB === "coupons") { shopCoupons(content, k); return; }
+    if (SHOP_TAB === "stock") { shopStock(content, k); return; }
+    if (SHOP_TAB === "payments") { shopPayments(content, k); return; }
     var al = alignedWith(k, D.shop);
     if (!al.a.length) { content.appendChild(el("p", "muted", U.sh_no_data)); return; }
     if (al.have < al.of) content.appendChild(note(U.parts_note.replace("{n}", al.have).replace("{t}", al.of)));
@@ -248,4 +269,4 @@
     else if (SHOP_TAB === "customers") shopCustomers(content, k, al, A, B);
     else shopOrders(content, k, al, A, B);
   }
-  VIEWS.push({ id: "shop", icon: "cart", label: "n_shop", render: renderShop, needs: function () { return !!D.shop || !!D.shop_profit || !!D.funnel || !!D.product_funnel || !!D.shop_lines || !!D.coupons; } });
+  VIEWS.push({ id: "shop", icon: "cart", label: "n_shop", render: renderShop, needs: function () { return !!D.shop || !!D.shop_profit || !!D.funnel || !!D.product_funnel || !!D.shop_lines || !!D.coupons || !!D.stock || !!D.payments; } });

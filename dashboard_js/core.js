@@ -40,7 +40,15 @@
     }
     if (perMonth("shop", function (m) { return nums(m, BASE) && (!MORE.some(function (k) { return m[k] !== undefined; }) || nums(m, MORE)); })) return true;
     if (perMonth("funnel", function (m) { return obj(m) && steps(m.steps) && ["by_device", "by_channel"].every(function (g) { return m[g] === undefined || (obj(m[g]) && Object.keys(m[g]).every(function (n) { return steps(m[g][n]); })); }); })) return true;
-    if (perMonth("product_funnel", named(3)) || perMonth("shop_lines", named(3)) || perMonth("coupons", named(3))) return true;
+    if (perMonth("product_funnel", named(3)) || perMonth("shop_lines", named(3)) || perMonth("coupons", named(3)) || perMonth("stock", function (m) { return named(1)(m) && Object.keys(m).every(function (n) { return m[n][0] % 1 === 0; }); })) return true;
+    if (perMonth("payments", function (m) {
+      var fees = null;
+      return obj(m) && Object.keys(m).length <= 12 && Object.keys(m).every(function (n) {
+        var r = m[n], f = Array.isArray(r) && r.length === 4 && r[3] === null;
+        if (fees === null) fees = f; else if (fees !== f) return false;
+        return Array.isArray(r) && r.length === 4 && [0, 1, 2].every(function (i) { return num(r[i]) && r[i] % 1 === 0; }) && (r[3] === null || num(r[3]));
+      });
+    })) return true;
     var sp = d.shop_profit;
     if (sp !== undefined) {
       if (!obj(sp) || typeof sp.prices !== "boolean" || !obj(sp.months)) return true;
