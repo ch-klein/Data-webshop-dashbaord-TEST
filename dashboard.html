@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; font-src data:; style-src 'sha256-wTCPp9EGYqGmi0ej5ncBSJ5hKTFx9IuQCtGtWzcFGpI='; script-src 'sha256-PMtaD6UFsHcEYgBT5E/GZCV3Wb+Z0ew9nHIqnUI5hPw='; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; font-src data:; style-src 'sha256-wTCPp9EGYqGmi0ej5ncBSJ5hKTFx9IuQCtGtWzcFGpI='; script-src 'sha256-ta75OSSAen+nR/tR8BfL08LymFKkiOnjBSI83uNQRes='; base-uri 'none'; form-action 'none'">
 <meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
 <title>Van Dijk Fietsen (voorbeeld) · Dashboard</title>
 <style>/* Dashboard (lay-out: donkere zijbalk, topbalk, tegels met pictogram, panelen met uitklapknop). Kleuren komen als variabelen uit het thema. */
@@ -670,7 +670,9 @@ html[data-style="donker"]{color-scheme:dark;--page:#0b0a1f;--card:#161334;--text
         var text = c && c.t !== undefined ? c.t : c, cl = (c && c.cls) || (i >= 1 ? "num" : "");
         if (i === 0) {                                   // eerste cel = rijkop; bij een aanklikbare rij met een echte knop (toetsenbord en schermlezer)
           var th = el("th", cl); th.setAttribute("scope", "row");
-          if (clickable) { var btn = el("button", "rowbtn", text); btn.type = "button"; th.appendChild(btn); } else th.textContent = text;
+          if (clickable) { var btn = el("button", "rowbtn", text); btn.type = "button"; th.appendChild(btn); }
+          else if (c && c.sr) th.appendChild(el("span", "sr", text));                  // rijkop die er niet staat maar wel voorgelezen wordt (vervolgregel van dezelfde groep)
+          else th.textContent = text;
           tr.appendChild(th);
         } else tr.appendChild(el("td", cl, text));
       });
@@ -678,7 +680,9 @@ html[data-style="donker"]{color-scheme:dark;--page:#0b0a1f;--card:#161334;--text
       tbody.appendChild(tr);
     });
     t.appendChild(tbody);
-    var w = el("div", "scroll"); w.appendChild(t); return w;
+    var w = el("div", "scroll"); w.appendChild(t);
+    if (!onPick) { w.tabIndex = 0; w.setAttribute("role", "region"); w.setAttribute("aria-label", head.join(", ")); }     // een tabel zonder aanklikbare rijen die breder kan zijn dan het scherm: met het toetsenbord te scrollen
+    return w;
   }
   function openItem(card, key) {
     if (!key) return;
@@ -1053,7 +1057,7 @@ html[data-style="donker"]{color-scheme:dark;--page:#0b0a1f;--card:#161334;--text
       P.ads.rows.forEach(function (a) {
         P.ads.scenarios.forEach(function (sc, i) {
           var extraCost = a.cost * sc / 100, extraRev = a.roas === null ? 0 : extraCost * a.roas * P.ads.efficiency;
-          rows2.push({ key: a.channel + sc, cells: [{ t: i === 0 ? a.channel : "", cls: "txt" }, i === 0 ? eur(a.cost) : "", i === 0 ? eur(a.revenue) : "", i === 0 ? (a.roas === null ? U.none : a.roas.toLocaleString(LOC, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "\u00d7") : "",
+          rows2.push({ key: a.channel + sc, cells: [i === 0 ? { t: a.channel, cls: "txt" } : { t: a.channel, cls: "txt", sr: true }, i === 0 ? eur(a.cost) : "", i === 0 ? eur(a.revenue) : "", i === 0 ? (a.roas === null ? U.none : a.roas.toLocaleString(LOC, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "\u00d7") : "",
                                                       { t: (sc > 0 ? "+" : "\u2212") + Math.abs(sc) + "%", cls: "num" }, { t: (extraCost >= 0 ? "+" : "\u2212") + eur(Math.abs(extraCost)), cls: "num" }, { t: (extraRev >= 0 ? "+" : "\u2212") + eur(Math.abs(extraRev)), cls: "num" }] });
         });
       });
@@ -2790,7 +2794,8 @@ html[data-style="donker"]{color-scheme:dark;--page:#0b0a1f;--card:#161334;--text
   function renderHead() {
     var v = active().filter(function (x) { return x.id === S.view; })[0] || active()[0];
     headBox.textContent = "";
-    var h1 = el("h1", null, U[v.label]); h1.appendChild(el("small", null, selText())); headBox.appendChild(h1);
+    var h1 = el("h1", null, U[v.label]); h1.id = "paginatitel"; h1.appendChild(el("small", null, selText())); headBox.appendChild(h1);
+    headBox.setAttribute("role", "region"); headBox.setAttribute("aria-labelledby", "paginatitel");              // de kop met de gekozen periode is een eigen oriëntatiepunt voor schermlezers
     var cr = el("div", "crumbs"); cr.appendChild(icon("home", 16)); cr.appendChild(document.createTextNode(" " + U.n_overview));
     if (v.id !== "overview") { cr.appendChild(document.createTextNode(" \u203a " + U[v.label])); }
     headBox.appendChild(cr);
