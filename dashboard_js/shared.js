@@ -10,6 +10,8 @@
     }
     return { a: a, b: k.al.b ? b : null, have: k.al.a.filter(function (m) { return !!store[m]; }).length, of: k.al.a.length };
   }
+  // na het opnieuw tekenen van de inhoud is de aangeklikte tabknop vervangen: de focus gaat dan naar de nieuwe knop, zodat toetsenbordgebruikers niet bovenaan beginnen
+  function keepFocus(attr, value) { var n = document.querySelector('.subtabs .pill[' + attr + '="' + value + '"]'); if (n) n.focus(); }
   function sumBy(months, getter) {
     var out = {};
     months.forEach(function (ym) { var d = getter(ym) || {}; for (var key in d) { var v = d[key]; out[key] = out[key] || [0, 0, 0]; for (var j = 0; j < v.length; j++) out[key][j] += v[j]; } });

@@ -41,7 +41,7 @@
     var detail = el("div");
     card.appendChild(pickTable(U.th_pages, rows, function (key, tr) {
       Array.prototype.forEach.call(card.querySelectorAll("tr.pick.on"), function (x) { x.classList.remove("on"); }); tr.classList.add("on");
-      trendDetail(detail, k, U.h_item_trend.replace("{name}", key), function (ym) {
+      trendDetail(detail, k, U.h_item_trend.replace("{name}", function () { return key; }), function (ym) {
         if (!D.pages[ym]) return null; var r = D.pages[ym].filter(function (x) { return x[0] === key; })[0]; return r ? r[1] : 0;
       }, n0);
     }));

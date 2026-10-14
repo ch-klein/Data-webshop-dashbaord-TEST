@@ -32,7 +32,7 @@
     });
     if (isNeon()) card.appendChild(neonRow(shareItems(k, S_, ts, n0, null)));
     card.appendChild(pickTable(U.in_th_channels, rows, null));
-    if (S_[names[0]] / ts >= 0.6) card.appendChild(note(U.in_depend.replace("{name}", names[0]).replace("{p}", pct(S_[names[0]] / ts * 100, 0))));
+    if (S_[names[0]] / ts >= 0.6) card.appendChild(note(U.in_depend.replace("{name}", function () { return names[0]; }).replace("{p}", function () { return pct(S_[names[0]] / ts * 100, 0); })));
     card.appendChild(note(U.in_channels_note));
   }
   function insightPages(content, k) {
@@ -49,7 +49,7 @@
     });
     rows.push({ total: true, key: "", cells: [U.in_top5, n0(ss), pct(ss / tot.s * 100, 0), n0(cc), tot.c ? pct(cc / tot.c * 100, 0) : U.none] });
     card.appendChild(pickTable(U.in_th_pages, rows, null));
-    if (ss / tot.s >= 0.5) card.appendChild(note(U.in_concentrated.replace("{p}", pct(ss / tot.s * 100, 0))));
+    if (ss / tot.s >= 0.5) card.appendChild(note(U.in_concentrated.replace("{p}", function () { return pct(ss / tot.s * 100, 0); })));
     card.appendChild(note(U.in_pages_note));
   }
   function isBrand(q) {
@@ -74,7 +74,7 @@
     card.appendChild(pickTable(U.in_th_brand, [row("b", U.in_brand), row("n", U.in_nonbrand)], null));
     if (B) {
       var a = A.n[0], b = B.n[0], d = dlt(a, b);
-      if (b && Math.max(a, b) >= 50 && Math.abs(d) >= 15 && Math.abs(a - b) >= 3.5 * Math.sqrt(a + b)) card.appendChild(note((d > 0 ? U.in_nb_up : U.in_nb_down).replace("{p}", pct(Math.abs(d), 0))));
+      if (b && Math.max(a, b) >= 50 && Math.abs(d) >= 15 && Math.abs(a - b) >= 3.5 * Math.sqrt(a + b)) card.appendChild(note((d > 0 ? U.in_nb_up : U.in_nb_down).replace("{p}", function () { return pct(Math.abs(d), 0); })));
     }
     card.appendChild(note(U.in_brand_note));
   }
@@ -89,7 +89,7 @@
       var g = D.goals[d[0]]; if (!g || (d[1] === "r" && !HASREV)) return;
       var target = g * n, actual = k.A[d[1]], ratio = actual / target * 100;
       rows.push({ key: d[0], cells: [d[2], d[3](g), d[3](target), d[3](actual), { t: pct(ratio, 0), cls: "num " + (ratio >= 100 ? "pos" : "neg") },
-                                     { t: ratio >= 100 ? U.in_goal_met : U.in_goal_open.replace("{p}", pct(100 - ratio, 0)), cls: "txt" }] });
+                                     { t: ratio >= 100 ? U.in_goal_met : U.in_goal_open.replace("{p}", function () { return pct(100 - ratio, 0); }), cls: "txt" }] });
     });
     if (!rows.length) { card.appendChild(el("p", "muted", U.no_data)); return; }
     if (isNeon()) {
@@ -176,7 +176,7 @@
       return { key: n, cells: [n, n0(a[0]), eur(a[1]), pct(a[1] / tot * 100, 0), !B ? U.none : (B[n] ? { t: sgn(d), cls: "num " + cls(d) } : { t: U.kw_new, cls: "num new" })] };
     });
     card.appendChild(pickTable(U.in_th_products, rows, null));
-    if (names.length > 3 && top3 / tot >= 0.5) card.appendChild(note(U.in_prod_concentrated.replace("{p}", pct(top3 / tot * 100, 0))));
+    if (names.length > 3 && top3 / tot >= 0.5) card.appendChild(note(U.in_prod_concentrated.replace("{p}", function () { return pct(top3 / tot * 100, 0); })));
     card.appendChild(note(U.in_products_note));
   }
   var DAY_ORDER = ["1", "2", "3", "4", "5", "6", "0"];
@@ -212,7 +212,7 @@
     });
     rows.push({ total: true, key: "", cells: [U.total, n0(ts), pct(te / ts * 100, 0), te ? n0(tsec / te) + " s" : U.none] });
     card.appendChild(pickTable(U.in_th_engagement, rows, null));
-    if (low) card.appendChild(note(U.in_low_engagement.replace("{name}", low[0]).replace("{p}", pct(low[1] * 100, 0))));
+    if (low) card.appendChild(note(U.in_low_engagement.replace("{name}", function () { return low[0]; }).replace("{p}", function () { return pct(low[1] * 100, 0); })));
     card.appendChild(note(U.in_engagement_note));
   }
   function renderInsights(content) {

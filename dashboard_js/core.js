@@ -35,15 +35,16 @@
     }
     var STEPS = ["view_item", "add_to_cart", "begin_checkout", "purchase"], BASE = ["orders", "revenue", "vat", "shipping", "discount", "cancelled"], MORE = ["refunded", "refund_orders", "new", "returning", "unknown"];
     function steps(o) { return nums(o, STEPS); }
+    function sized(m, max, nameMax) { var k = Object.keys(m); return k.length > 0 && k.length <= max && k.every(function (n) { return n.length > 0 && n.length <= nameMax; }); }
     function named(width) {
-      return function (m) { return obj(m) && Object.keys(m).every(function (n) { var r = m[n]; return Array.isArray(r) && r.length === width && r.every(function (x) { return num(x); }); }); };
+      return function (m) { return obj(m) && sized(m, 30, 120) && Object.keys(m).every(function (n) { var r = m[n]; return Array.isArray(r) && r.length === width && r.every(function (x) { return num(x); }); }); };
     }
     if (perMonth("shop", function (m) { return nums(m, BASE) && (!MORE.some(function (k) { return m[k] !== undefined; }) || nums(m, MORE)); })) return true;
     if (perMonth("funnel", function (m) { return obj(m) && steps(m.steps) && ["by_device", "by_channel"].every(function (g) { return m[g] === undefined || (obj(m[g]) && Object.keys(m[g]).every(function (n) { return steps(m[g][n]); })); }); })) return true;
     if (perMonth("product_funnel", named(3)) || perMonth("shop_lines", named(3)) || perMonth("coupons", named(3)) || perMonth("stock", function (m) { return named(1)(m) && Object.keys(m).every(function (n) { return m[n][0] % 1 === 0; }); })) return true;
     if (perMonth("payments", function (m) {
       var fees = null;
-      return obj(m) && Object.keys(m).length <= 12 && Object.keys(m).every(function (n) {
+      return obj(m) && sized(m, 12, 40) && Object.keys(m).every(function (n) {
         var r = m[n], f = Array.isArray(r) && r.length === 4 && r[3] === null;
         if (fees === null) fees = f; else if (fees !== f) return false;
         return Array.isArray(r) && r.length === 4 && [0, 1, 2].every(function (i) { return num(r[i]) && r[i] % 1 === 0; }) && (r[3] === null || num(r[3]));
@@ -85,10 +86,10 @@
     for (var k in attrs) e.setAttribute(k, attrs[k]);
     return e;
   }
-  function n0(x) { return Math.round(x).toLocaleString(LOC); }
+  function n0(x) { return (Math.round(x) + 0).toLocaleString(LOC); }       // + 0: een afgeronde -0 wordt 0 (anders staat er -0)
   function eur(x) { return (D.lang === "nl" ? "€ " : "€") + n0(x); }
   function pct(x, d) { return x.toLocaleString(LOC, { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }) + "%"; }
-  function dlt(a, b) { return b ? (a - b) / b * 100 : null; }
+  function dlt(a, b) { return b ? (a - b) / Math.abs(b) * 100 : null; }       // Math.abs: bij een negatieve vergelijking (winst) is een stijging ook een plus
   function sgn(x) { return x === null ? U.none : (Math.round(Math.abs(x)) === 0 ? pct(0, 0) : (x >= 0 ? "+" : "−") + pct(Math.abs(x), 0)); }       // een verschil dat naar 0% afrondt, krijgt geen teken
   function cls(x) { return x === null || Math.round(Math.abs(x)) === 0 ? "" : (x >= 0 ? "pos" : "neg"); }
   function mname(ym) { var p = ym.split("-"); return D.month_names[parseInt(p[1], 10) - 1] + " " + p[0]; }

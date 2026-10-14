@@ -16,14 +16,14 @@
     kc.appendChild(shopKpis(k, [[U.st_k_products, rows.length, null, n0], [U.st_k_out, rows.filter(function (r) { return r.s === 0; }).length, null, n0], [U.st_k_low, low.length, null, n0],
                                 [U.st_k_units, rows.reduce(function (a, r) { return a + r.s; }, 0), null, n0]]));
     kc.appendChild(note(U.st_note)); content.appendChild(kc);
-    var flags = out.map(function (r) { return U.st_flag_out.replace("{p}", r.n).replace("{n}", n0(r.q)); })
-      .concat(low.sort(function (a, b) { return a.cover - b.cover; }).map(function (r) { return U.st_flag_low.replace("{p}", r.n).replace("{s}", n0(r.s)).replace("{d}", n0(r.cover)).replace("{n}", n0(r.q)); }));
+    var flags = out.map(function (r) { return U.st_flag_out.replace("{p}", function () { return r.n; }).replace("{n}", n0(r.q)); })
+      .concat(low.sort(function (a, b) { return a.cover - b.cover; }).map(function (r) { return U.st_flag_low.replace("{p}", function () { return r.n; }).replace("{s}", n0(r.s)).replace("{d}", n0(Math.floor(r.cover))).replace("{n}", n0(r.q)); }));
     var fc = el("section", "card"); fc.appendChild(panelHead(U.st_h_flags));
     if (flags.length) { var ul = el("ul"); flags.forEach(function (f) { ul.appendChild(el("li", null, f)); }); fc.appendChild(ul); } else fc.appendChild(el("p", "muted", U.st_no_flags));
     fc.appendChild(note(U.st_flag_note)); content.appendChild(fc);
     rows.sort(function (a, b) { return (a.cover === null ? 1e9 + a.s : a.cover) - (b.cover === null ? 1e9 + b.s : b.cover); });
     var tc = el("section", "card"); tc.appendChild(panelHead(U.st_h_table));
-    tc.appendChild(pickTable(U.st_th, rows.slice(0, 15).map(function (r) { return { key: r.n, cells: [r.n, n0(r.s), r.q ? n0(r.q) : U.none, r.cover === null ? U.none : n0(r.cover)] }; }), null));
+    tc.appendChild(pickTable(U.st_th, rows.slice(0, 15).map(function (r) { return { key: r.n, cells: [r.n, n0(r.s), r.q ? n0(r.q) : U.none, r.cover === null ? U.none : n0(Math.floor(r.cover))] }; }), null));
     content.appendChild(tc);
   }
 
@@ -59,7 +59,7 @@
     Object.keys(A.methods).forEach(function (n) {
       var x = A.methods[n], tx = payTries(x), to = payTries(A) - tx; if (tx < 50 || to < 50) return;
       var lx = (x.failed + x.abandoned) / tx, lo = (A.failed + A.abandoned - x.failed - x.abandoned) / to, p = (lx * tx + lo * to) / (tx + to), se = Math.sqrt(p * (1 - p) * (1 / tx + 1 / to));
-      if (lx >= 0.10 && lx >= 1.5 * lo && (lx - lo) / (se || 1) >= 3) flags.push(U.py_flag.replace("{m}", n).replace("{a}", pct(lx * 100, 0)).replace("{b}", pct(lo * 100, 0)).replace("{n}", n0(tx)));
+      if (lx >= 0.10 && lx >= 1.5 * lo && (lx - lo) / (se || 1) >= 3) flags.push(U.py_flag.replace("{m}", function () { return n; }).replace("{a}", pct(lx * 100, 0)).replace("{b}", pct(lo * 100, 0)).replace("{n}", n0(tx)));
     });
     var fc = el("section", "card"); fc.appendChild(panelHead(U.py_h_flags));
     if (flags.length) { var ul = el("ul"); flags.forEach(function (f) { ul.appendChild(el("li", null, f)); }); fc.appendChild(ul); } else fc.appendChild(el("p", "muted", U.py_no_flags));

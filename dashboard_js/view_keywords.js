@@ -166,7 +166,7 @@
     ideas.forEach(function (i) { if (out.length < 10 && (perHead[i.head] || 0) < 2) { perHead[i.head] = (perHead[i.head] || 0) + 1; out.push(i); } });
     if (!out.length) box.appendChild(el("p", "muted", U.kw_ideas_none));
     else box.appendChild(pickTable(U.kw_ideas_th, out.map(function (i) {
-      return { key: i.idea, cells: [i.idea, { t: U.kw_ideas_why.replace("{mod}", i.mod).replace("{n}", i.n).replace("{head}", i.head), cls: "txt" }, n0(i.hk)] };
+      return { key: i.idea, cells: [i.idea, { t: U.kw_ideas_why.replace("{mod}", function () { return i.mod; }).replace("{n}", i.n).replace("{head}", function () { return i.head; }), cls: "txt" }, n0(i.hk)] };
     }), null));
     box.appendChild(note(U.kw_ideas_note));
   }
@@ -217,7 +217,7 @@
     KW_TABS.forEach(function (t) {
       var b = el("button", "pill" + (S.kw === t ? " on" : ""), U.kw_tabs[t]); b.type = "button"; b.setAttribute("data-kw", t);
       if (S.kw === t) b.setAttribute("aria-current", "true");
-      b.addEventListener("click", function () { S.kw = t; renderContent(); syncHash(); });
+      b.addEventListener("click", function () { S.kw = t; renderContent(); syncHash(); keepFocus("data-kw", t); });
       tabs.appendChild(b);
     });
     content.appendChild(tabs);

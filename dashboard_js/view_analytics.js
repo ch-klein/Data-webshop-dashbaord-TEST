@@ -31,7 +31,7 @@
       card.appendChild(note(U.channel_hint));
       card.appendChild(pickTable(U.th_channel, rows, function (key, tr) {
         Array.prototype.forEach.call(card.querySelectorAll("tr.pick.on"), function (x) { x.classList.remove("on"); }); tr.classList.add("on");
-        trendDetail(detail, k, U.h_item_trend.replace("{name}", key), function (ym) { var d = D.channels[ym]; return d ? (d[key] || 0) : null; }, n0);
+        trendDetail(detail, k, U.h_item_trend.replace("{name}", function () { return key; }), function (ym) { var d = D.channels[ym]; return d ? (d[key] || 0) : null; }, n0);
       }));
       card.appendChild(detail);
       openItem(card, S.item);
@@ -60,7 +60,7 @@
         card2.appendChild(note(U.channel_hint));
         card2.appendChild(pickTable(U.th_device, drows, function (key, tr) {
           Array.prototype.forEach.call(card2.querySelectorAll("tr.pick.on"), function (x) { x.classList.remove("on"); }); tr.classList.add("on");
-          trendDetail(detail2, k, U.h_item_trend.replace("{name}", dn(key)), function (ym) { var d = D.devices[ym]; return d ? (d[key] ? d[key][0] : 0) : null; }, n0);
+          trendDetail(detail2, k, U.h_item_trend.replace("{name}", function () { return dn(key); }), function (ym) { var d = D.devices[ym]; return d ? (d[key] ? d[key][0] : 0) : null; }, n0);
         }));
         card2.appendChild(detail2);
         openItem(card2, S.item);

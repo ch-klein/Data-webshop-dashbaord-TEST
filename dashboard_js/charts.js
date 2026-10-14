@@ -73,13 +73,14 @@
     var all = [0, 1];
     series.forEach(function (s) { s.values.forEach(function (v) { if (v !== null && v !== undefined && isFinite(v)) all.push(v); }); });
     var mx = niceMax(Math.max.apply(null, all)), slot = iw / Math.max(n, 1);
+    var lo = Math.min.apply(null, all), mn = lo < 0 ? -niceMax(-lo) : 0, span = mx - mn;       // negatieve waarden (winst): de as loopt van het minimum tot het maximum en nul staat ertussen
     var g = svg("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", role: "img",
-                         "aria-label": title + ": " + mname(labels[0]) + " – " + mname(labels[n - 1]) + ", max " + fmt(Math.max.apply(null, all)) });
-    function y(v) { return T + ih - Math.min(v, mx) / mx * ih; }
-    [0, 0.5, 1].forEach(function (f) {
-      var yy = y(mx * f);
+                         "aria-label": title + ": " + mname(labels[0]) + " – " + mname(labels[n - 1]) + ", max " + fmt(Math.max.apply(null, all)) + (lo < 0 ? ", min " + fmt(lo) : "") });
+    function y(v) { return T + ih - (Math.max(Math.min(v, mx), mn) - mn) / span * ih; }
+    (mn < 0 ? [mn, 0, mx] : [0, mx / 2, mx]).forEach(function (lv) {
+      var yy = y(lv);
       g.appendChild(svg("line", { x1: L, x2: W - R, y1: yy, y2: yy, "class": "grid" }));
-      var t = svg("text", { x: L - 6, y: yy + 4, "text-anchor": "end", "class": "axis ax2" }); t.textContent = axis(mx * f); g.appendChild(t);
+      var t = svg("text", { x: L - 6, y: yy + 4, "text-anchor": "end", "class": "axis ax2" }); t.textContent = axis(lv); g.appendChild(t);
     });
     labels.forEach(function (ym, i) {
       if (n > 12 && i % 3 !== 0) return;
@@ -108,8 +109,8 @@
       var ns = series.length, gw = slot * 0.8, bw = gw / ns;
       series.forEach(function (s, si) {
         s.values.forEach(function (v, i) {
-          if (v === null || v === undefined || !(v > 0)) return;
-          var h = ih - (y(v) - T), r = svg("rect", { x: L + slot * i + slot * 0.1 + bw * si, y: y(v), width: Math.max(bw - 1, 1), height: Math.max(h, 1), "class": "bar g" + si });
+          if (v === null || v === undefined || !isFinite(v) || v === 0) return;
+          var y0 = y(0), top = Math.min(y(v), y0), h = Math.abs(y(v) - y0), r = svg("rect", { x: L + slot * i + slot * 0.1 + bw * si, y: top, width: Math.max(bw - 1, 1), height: Math.max(h, 1), "class": "bar g" + si });
           var tt = svg("title", {}); tt.textContent = s.name + " · " + mname(labels[i]) + ": " + fmt(v); r.appendChild(tt); g.appendChild(r);
         });
       });

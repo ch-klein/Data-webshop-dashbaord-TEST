@@ -69,7 +69,7 @@
       if (isNeon()) {                                    // Donker: een meter per doel met de voortgang, en de verwachting eronder
         card.appendChild(neonRow(RW.map(function (r) {
           var done = r.goal ? r.ytd / r.goal * 100 : 0, exp = r.goal ? r.projection / r.goal * 100 : 0;
-          return { label: U.pc_metrics[r.metric], fill: done, center: pct(done, 0), sub: pcFmt(r.metric, r.ytd) + " / " + pcFmt(r.metric, r.goal) + " \u00b7 " + U.nx_expect.replace("{p}", pct(exp, 0)) };
+          return { label: U.pc_metrics[r.metric], fill: done, center: pct(done, 0), sub: pcFmt(r.metric, r.ytd) + " / " + pcFmt(r.metric, r.goal) + " \u00b7 " + U.nx_expect.replace("{p}", function () { return pct(exp, 0); }) };
         })));
       }
       card.appendChild(pickTable(U.pc_th, rows, null));

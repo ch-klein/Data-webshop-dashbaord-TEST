@@ -147,7 +147,7 @@
     [["←", U.gl_left, -15, 0], ["→", U.gl_right, 15, 0], ["↑", U.gl_up, 0, 15], ["↓", U.gl_down, 0, -15]].forEach(function (b) {
       var bt = el("button", "xb", b[0]); bt.type = "button"; bt.setAttribute("aria-label", b[1]); bt.title = b[1]; bt.addEventListener("click", function () { rotate(b[2], b[3]); }); btns.appendChild(bt);
     });
-    var home = el("button", "xb", U.gl_home.replace("{c}", WORLD.c[topIdx].n)); home.type = "button";
+    var home = el("button", "xb", U.gl_home.replace("{c}", function () { return WORLD.c[topIdx].n; })); home.type = "button";
     home.addEventListener("click", function () { var c = centerOf(WORLD.c[topIdx]); lon0 = c[0]; lat0 = Math.max(-60, Math.min(70, c[1] * 0.6)); sel = topIdx; describe(sel, true); draw(); });
     btns.appendChild(home);
     if (!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) {

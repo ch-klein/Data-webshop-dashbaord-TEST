@@ -15,7 +15,7 @@
     if (isNeon()) return neonRow(list.map(function (r) { return compareItem(k, r[0], r[1], r[2], r[3], null); }));
     var wrap = el("div", "kpis");
     list.forEach(function (row) {
-      var card = el("div", "kpi"); card.appendChild(el("div", "l", row[0])); card.appendChild(el("div", "v", row[3](row[1])));
+      var card = el("div", "kpi"); card.appendChild(el("div", "l", row[0])); card.appendChild(el("div", "v" + (row[1] < 0 ? " neg" : ""), row[3](row[1])));
       if (k.c && row[2] !== null && row[2] !== undefined) {
         var d = dlt(row[1], row[2]), line = el("div", "d " + cls(d));
         line.appendChild(el("b", null, sgn(d))); line.appendChild(document.createTextNode(" " + U.vs + " " + k.c.label)); card.appendChild(line);
@@ -136,7 +136,7 @@
                                 [U.fn_r3, rate(A, 3), B && B.begin_checkout ? rate(B, 3) : null, p1], [U.fn_rall, shopDiv(A.purchase, A.view_item, 100), B && B.view_item ? shopDiv(B.purchase, B.view_item, 100) : null, function (x) { return pct(x, 2); }]]));
     var worst = 1, i;
     for (i = 2; i <= 3; i++) if (funnelRate(A, i) < funnelRate(A, worst)) worst = i;
-    kc.appendChild(note(U.fn_biggest.replace("{a}", U.fn_steps[FUNNEL[worst - 1]]).replace("{b}", U.fn_steps[FUNNEL[worst]]).replace("{p}", pct(100 - funnelRate(A, worst), 0))));
+    kc.appendChild(note(U.fn_biggest.replace("{a}", U.fn_steps[FUNNEL[worst - 1]]).replace("{b}", U.fn_steps[FUNNEL[worst]]).replace("{p}", function () { return pct(100 - funnelRate(A, worst), 0); })));
     content.appendChild(kc);
     var vc = el("section", "card"); vc.appendChild(panelHead(U.fn_h_steps));
     vc.appendChild(hbars(FUNNEL.map(function (s, j) { return { label: U.fn_steps[s], value: A[s], text: n0(A[s]) + (j ? " (" + pct(funnelRate(A, j), 0) + ")" : "") }; })));
@@ -160,12 +160,12 @@
     return t;
   }
   function profitSum(months) {
-    var t = { rev: 0, known: 0, cost: 0, ads: 0, adMonths: 0, fees: 0, feeMonths: 0, prod: {} };
+    var t = { rev: 0, known: 0, cost: 0, ads: 0, fees: 0, prod: {} };
     months.forEach(function (ym) {
       var m = D.shop_profit.months[ym]; if (!m) return;
       t.rev += m.rev; t.known += m.known; t.cost += m.cost;
-      if (D.ads && D.ads[ym]) { t.ads += D.ads[ym].t[0]; t.adMonths++; }
-      var f = monthFees(ym); if (f !== null) { t.fees += f; t.feeMonths++; }
+      if (D.ads && D.ads[ym]) t.ads += D.ads[ym].t[0];
+      var f = monthFees(ym); if (f !== null) t.fees += f;
       m.rows.forEach(function (r) { var p = t.prod[r[0]] = t.prod[r[0]] || { items: 0, rev: 0, cost: 0, unknown: 0 }; p.items += r[1]; p.rev += r[2]; if (r[3] === null) p.unknown += r[2]; else p.cost += r[3]; });
     });
     return t;
@@ -186,13 +186,16 @@
       var list = [[U.pr_k_profit, A.known - A.cost, B && B.known - B.cost, eur], [U.pr_k_margin, margin(A), B && B.known ? margin(B) : null, p1], [U.pr_k_cover, cov, B && B.rev ? cover(B) : null, function (x) { return pct(x, 0); }]];
       var adsOk = A.ads > 0 && cov >= 90;
       if (adsOk) list.push([U.pr_k_after_ads, A.known - A.cost - A.ads, B && B.ads > 0 ? B.known - B.cost - B.ads : null, eur]);
-      var allOk = adsOk && A.adMonths === al.a.length && A.feeMonths === al.a.length, allB = B && B.adMonths === al.b.length && B.feeMonths === al.b.length;
+      // brutowinst na advertentie- en betaalkosten van een maand; null als een van de drie ontbreekt (dan telt de maand niet mee, ook niet in de som)
+      var after = function (ym) { var m = P.months[ym], ad = D.ads && D.ads[ym] ? D.ads[ym].t[0] : null, fe = monthFees(ym); return m && m.known && ad !== null && fe !== null ? m.known - m.cost - ad - fe : null; };
+      var every = function (months) { return months.every(function (ym) { return after(ym) !== null; }); };
+      var allOk = adsOk && every(al.a), allB = !!B && every(al.b);
       if (allOk) list.push([U.pr_k_after_all, A.known - A.cost - A.ads - A.fees, allB ? B.known - B.cost - B.ads - B.fees : null, eur]);
       kc.appendChild(shopKpis(k, list));
       kc.appendChild(note(U.pr_scope));
       if (allOk) kc.appendChild(note(U.pr_all_note));
       if (A.ads > 0 && !adsOk) kc.appendChild(note(U.pr_ads_cover));
-      if (cov < 100) kc.appendChild(note(U.pr_cover_note.replace("{p}", pct(cov, 0))));
+      if (cov < 100) kc.appendChild(note(U.pr_cover_note.replace("{p}", function () { return pct(cov, 0); })));
       content.appendChild(kc);
       // per kanaal: break-even rendement en winst na advertentie, met de gemiddelde marge van de hele shop als aanname
       if (adsOk && D.ads && D.channel_stats) {
@@ -213,7 +216,6 @@
         }
       }
       if (allOk) {
-        var after = function (ym) { var m = P.months[ym], ad = D.ads && D.ads[ym] ? D.ads[ym].t[0] : null, fe = monthFees(ym); return m && m.known && ad !== null && fe !== null ? m.known - m.cost - ad - fe : null; };
         var neg = al.a.filter(function (ym) { var v = after(ym); return v !== null && v < 0; }).length;
         var ac = el("section", "card"); ac.appendChild(panelHead(U.pr_h_after_all)); content.appendChild(ac);
         ac.appendChild(monthChart(k, "s", after, eur, U.pr_h_after_all));
@@ -250,7 +252,7 @@
       tabs.forEach(function (t) {
         var b = el("button", "pill" + (SHOP_TAB === t ? " on" : ""), U.sh_tabs[t]); b.type = "button"; b.setAttribute("data-shop", t);
         if (SHOP_TAB === t) b.setAttribute("aria-current", "true");
-        b.addEventListener("click", function () { SHOP_TAB = t; renderContent(); });
+        b.addEventListener("click", function () { SHOP_TAB = t; renderContent(); keepFocus("data-shop", t); });
         bar.appendChild(b);
       });
       content.appendChild(bar);

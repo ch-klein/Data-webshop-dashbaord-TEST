@@ -19,9 +19,9 @@
     var avgCart = V ? C / V : 0, avgRet = R ? F / R : 0;
     list.forEach(function (p) {
       var exp = p.v * avgCart;
-      if (p.hasFunnel && p.v >= 100 && exp >= 8 && p.c < 0.5 * exp && poissonCdf(p.c, exp) < 0.05) out.push({ sev: 0, text: U.pd_flag_low.replace("{name}", p.name).replace("{v}", n0(p.v)).replace("{r}", pct(p.c / p.v * 100, 1)).replace("{a}", pct(avgCart * 100, 1)) });
+      if (p.hasFunnel && p.v >= 100 && exp >= 8 && p.c < 0.5 * exp && poissonCdf(p.c, exp) < 0.05) out.push({ sev: 0, text: U.pd_flag_low.replace("{name}", function () { return p.name; }).replace("{v}", n0(p.v)).replace("{r}", pct(p.c / p.v * 100, 1)).replace("{a}", pct(avgCart * 100, 1)) });
       var rate = p.rev ? p.ref / p.rev : 0;
-      if (p.hasLines && p.items >= 20 && avgRet > 0 && rate >= Math.max(2 * avgRet, avgRet + 0.05)) out.push({ sev: 1, text: U.pd_flag_ret.replace("{name}", p.name).replace("{r}", pct(rate * 100, 1)).replace("{a}", pct(avgRet * 100, 1)) });
+      if (p.hasLines && p.items >= 20 && avgRet > 0 && rate >= Math.max(2 * avgRet, avgRet + 0.05)) out.push({ sev: 1, text: U.pd_flag_ret.replace("{name}", function () { return p.name; }).replace("{r}", pct(rate * 100, 1)).replace("{a}", pct(avgRet * 100, 1)) });
     });
     return { items: out, avgCart: avgCart };
   }
@@ -91,7 +91,7 @@
     kc.appendChild(note(U.cp_note)); content.appendChild(kc);
     // wat opvalt: alleen met genoeg bestellingen, en zonder te zeggen waarom
     var flags = [];
-    Object.keys(A.codes).forEach(function (c) { var x = A.codes[c], r = discountRate(x.revenue, x.discount); if (x.orders >= 20 && r >= 30) flags.push(U.cp_flag_rate.replace("{c}", c).replace("{r}", pct(r, 0)).replace("{n}", n0(x.orders))); });
+    Object.keys(A.codes).forEach(function (c) { var x = A.codes[c], r = discountRate(x.revenue, x.discount); if (x.orders >= 20 && r >= 30) flags.push(U.cp_flag_rate.replace("{c}", function () { return c; }).replace("{r}", pct(r, 0)).replace("{n}", n0(x.orders))); });
     if (without !== null && A.orders >= 30 && aov(A) < 0.85 * without) flags.push(U.cp_flag_aov.replace("{a}", eur(aov(A))).replace("{b}", eur(without)));
     var fc = el("section", "card"); fc.appendChild(panelHead(U.cp_h_flags));
     if (flags.length) { var ul = el("ul"); flags.forEach(function (f) { ul.appendChild(el("li", null, f)); }); fc.appendChild(ul); } else fc.appendChild(el("p", "muted", U.cp_no_flags));
