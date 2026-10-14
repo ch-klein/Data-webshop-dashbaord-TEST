@@ -228,6 +228,8 @@ html[data-style="donker"] .chart .area{opacity:.25}
 .ly-row .xb{padding:3px 10px;min-width:36px}
 .ly-row .xb:disabled{opacity:.4;cursor:default}
 .ly-row input{width:18px;height:18px}
+.ly-export{display:block;margin-top:10px;font-weight:600}
+.ly-setting{display:block;width:100%;box-sizing:border-box;margin:4px 0;font:12px/1.4 ui-monospace,Consolas,monospace;color:var(--text);background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px}
 
 /* wereldbol */
 .globe-row{display:grid;grid-template-columns:minmax(240px,560px) minmax(0,1fr);gap:20px;align-items:start}
