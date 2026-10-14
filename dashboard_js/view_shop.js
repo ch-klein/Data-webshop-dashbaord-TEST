@@ -222,6 +222,7 @@
     if (D.shop) tabs.push("orders");
     if (D.funnel) tabs.push("funnel");
     if (D.product_funnel || D.shop_lines) tabs.push("products");
+    if (D.coupons) tabs.push("coupons");
     if (D.shop && shopHasReturns()) tabs.push("returns", "customers");
     if (D.shop_profit) tabs.push("profit");
     if (tabs.indexOf(SHOP_TAB) < 0) SHOP_TAB = tabs[0];
@@ -238,6 +239,7 @@
     if (SHOP_TAB === "profit") { shopProfit(content, k); return; }
     if (SHOP_TAB === "funnel") { shopFunnel(content, k); return; }
     if (SHOP_TAB === "products") { shopProducts(content, k); return; }
+    if (SHOP_TAB === "coupons") { shopCoupons(content, k); return; }
     var al = alignedWith(k, D.shop);
     if (!al.a.length) { content.appendChild(el("p", "muted", U.sh_no_data)); return; }
     if (al.have < al.of) content.appendChild(note(U.parts_note.replace("{n}", al.have).replace("{t}", al.of)));
@@ -246,4 +248,4 @@
     else if (SHOP_TAB === "customers") shopCustomers(content, k, al, A, B);
     else shopOrders(content, k, al, A, B);
   }
-  VIEWS.push({ id: "shop", icon: "cart", label: "n_shop", render: renderShop, needs: function () { return !!D.shop || !!D.shop_profit || !!D.funnel || !!D.product_funnel || !!D.shop_lines; } });
+  VIEWS.push({ id: "shop", icon: "cart", label: "n_shop", render: renderShop, needs: function () { return !!D.shop || !!D.shop_profit || !!D.funnel || !!D.product_funnel || !!D.shop_lines || !!D.coupons; } });

@@ -61,3 +61,46 @@
     else fc.appendChild(el("p", "muted", U.pd_no_flags));
     fc.appendChild(note(U.pd_flag_note)); content.appendChild(fc);
   }
+
+  // ---------- weergave: Webshop, Kortingen ----------
+  // kortingscodes per maand (bestanden van de webshop): hoeveel bestellingen met een code, hoeveel korting, en wat het met de orderwaarde doet
+  function couponSum(months) {
+    var t = { orders: 0, revenue: 0, discount: 0, codes: {} };
+    months.forEach(function (ym) {
+      var m = D.coupons[ym]; if (!m) return;
+      for (var c in m) { var x = t.codes[c] = t.codes[c] || { orders: 0, revenue: 0, discount: 0 }; x.orders += m[c][0]; x.revenue += m[c][1]; x.discount += m[c][2]; t.orders += m[c][0]; t.revenue += m[c][1]; t.discount += m[c][2]; }
+    });
+    return t;
+  }
+  function discountRate(revenue, discount) { return revenue + discount > 0 ? discount / (revenue + discount) * 100 : 0; }
+  function shopTotals(months) { var o = 0, r = 0, any = false; months.forEach(function (ym) { var m = D.shop ? D.shop[ym] : null; if (m) { o += m.orders; r += m.revenue; any = true; } }); return any ? { orders: o, revenue: r } : null; }
+  function shopCoupons(content, k) {
+    var al = alignedWith(k, D.coupons);
+    content.appendChild(note(U.cp_intro));
+    if (!al.a.length) { content.appendChild(el("p", "muted", U.sh_no_data)); return; }
+    if (al.have < al.of) content.appendChild(note(U.parts_note.replace("{n}", al.have).replace("{t}", al.of)));
+    var A = couponSum(al.a), B = al.b ? couponSum(al.b) : null, SA = shopTotals(al.a), SB = al.b ? shopTotals(al.b) : null, p1 = function (x) { return pct(x, 1); };
+    var kc = el("section", "card"); kc.appendChild(panelHead(U.cp_h_kpi));
+    var aov = function (t) { return t.orders ? t.revenue / t.orders : 0; };
+    var list = [[U.cp_k_orders, A.orders, B && B.orders, n0]];
+    if (SA && SA.orders) list.push([U.cp_k_share, A.orders / SA.orders * 100, SB && SB.orders ? (B.orders / SB.orders * 100) : null, function (x) { return pct(x, 0); }]);
+    list.push([U.cp_k_discount, A.discount, B && B.discount, eur], [U.cp_k_rate, discountRate(A.revenue, A.discount), B && B.orders ? discountRate(B.revenue, B.discount) : null, p1], [U.cp_k_aov, aov(A), B && B.orders ? aov(B) : null, eur]);
+    var without = SA && SA.orders > A.orders ? (SA.revenue - A.revenue) / (SA.orders - A.orders) : null;
+    if (without !== null) list.push([U.cp_k_aov_without, without, null, eur]);
+    kc.appendChild(shopKpis(k, list));
+    kc.appendChild(note(U.cp_note)); content.appendChild(kc);
+    // wat opvalt: alleen met genoeg bestellingen, en zonder te zeggen waarom
+    var flags = [];
+    Object.keys(A.codes).forEach(function (c) { var x = A.codes[c], r = discountRate(x.revenue, x.discount); if (x.orders >= 20 && r >= 30) flags.push(U.cp_flag_rate.replace("{c}", c).replace("{r}", pct(r, 0)).replace("{n}", n0(x.orders))); });
+    if (without !== null && A.orders >= 30 && aov(A) < 0.85 * without) flags.push(U.cp_flag_aov.replace("{a}", eur(aov(A))).replace("{b}", eur(without)));
+    var fc = el("section", "card"); fc.appendChild(panelHead(U.cp_h_flags));
+    if (flags.length) { var ul = el("ul"); flags.forEach(function (f) { ul.appendChild(el("li", null, f)); }); fc.appendChild(ul); } else fc.appendChild(el("p", "muted", U.cp_no_flags));
+    fc.appendChild(note(U.cp_flag_note)); content.appendChild(fc);
+    var tc = el("section", "card"); tc.appendChild(panelHead(U.cp_h_table));
+    if (isNeon()) { var map = {}; Object.keys(A.codes).forEach(function (c) { map[c] = A.codes[c].orders; }); tc.appendChild(neonRow(shareItems(k, map, A.orders, n0, null))); }
+    var names = Object.keys(A.codes).sort(function (x, y) { return A.codes[y].orders - A.codes[x].orders; });
+    tc.appendChild(pickTable(U.cp_th, names.slice(0, 15).map(function (c) { var x = A.codes[c]; return { key: c, cells: [c, n0(x.orders), eur(x.revenue), eur(x.discount), eur(x.orders ? x.revenue / x.orders : 0), p1(discountRate(x.revenue, x.discount))] }; }), null));
+    content.appendChild(tc);
+    var ch = el("section", "card"); ch.appendChild(panelHead(U.cp_h_trend)); content.appendChild(ch);
+    ch.appendChild(monthChart(k, "s", function (ym) { var m = D.coupons[ym]; if (!m) return null; var r = 0, d = 0; for (var c in m) { r += m[c][1]; d += m[c][2]; } return discountRate(r, d); }, p1, U.cp_h_trend));
+  }
