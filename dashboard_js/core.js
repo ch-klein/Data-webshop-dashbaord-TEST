@@ -18,7 +18,38 @@
       var m = d.months[i];
       if (!m || typeof m.ym !== "string" || typeof m.s !== "number" || typeof m.u !== "number" || typeof m.c !== "number" || typeof m.r !== "number") return "data";
     }
-    return d.months.some(function (m) { return m.ym === d.latest; }) ? null : "data";
+    if (!d.months.some(function (m) { return m.ym === d.latest; })) return "data";
+    return optionalProblem(d) ? "data" : null;
+  }
+  // De webshopgegevens (alleen aanwezig als de klant ze heeft): een beschadigd of met de hand aangepast bestand geeft een foutmelding in plaats van NaN in de cijfers.
+  // Dezelfde regels als dashboard_contract.py, dat de gegevens al controleert voordat de pagina wordt geschreven.
+  function optionalProblem(d) {
+    var have = {}; d.months.forEach(function (m) { have[m.ym] = 1; });
+    function num(x) { return typeof x === "number" && isFinite(x) && x >= 0; }
+    function obj(x) { return !!x && typeof x === "object" && !Array.isArray(x); }
+    function nums(o, keys) { return obj(o) && keys.every(function (k) { return num(o[k]); }); }
+    function perMonth(key, ok) {
+      var s = d[key]; if (s === undefined) return false;
+      if (!obj(s)) return true;
+      return Object.keys(s).some(function (ym) { return !have[ym] || !ok(s[ym]); });
+    }
+    var STEPS = ["view_item", "add_to_cart", "begin_checkout", "purchase"], BASE = ["orders", "revenue", "vat", "shipping", "discount", "cancelled"], MORE = ["refunded", "refund_orders", "new", "returning", "unknown"];
+    function steps(o) { return nums(o, STEPS); }
+    function named(width) {
+      return function (m) { return obj(m) && Object.keys(m).every(function (n) { var r = m[n]; return Array.isArray(r) && r.length === width && r.every(function (x) { return num(x); }); }); };
+    }
+    if (perMonth("shop", function (m) { return nums(m, BASE) && (!MORE.some(function (k) { return m[k] !== undefined; }) || nums(m, MORE)); })) return true;
+    if (perMonth("funnel", function (m) { return obj(m) && steps(m.steps) && ["by_device", "by_channel"].every(function (g) { return m[g] === undefined || (obj(m[g]) && Object.keys(m[g]).every(function (n) { return steps(m[g][n]); })); }); })) return true;
+    if (perMonth("product_funnel", named(3)) || perMonth("shop_lines", named(3))) return true;
+    var sp = d.shop_profit;
+    if (sp !== undefined) {
+      if (!obj(sp) || typeof sp.prices !== "boolean" || !obj(sp.months)) return true;
+      return Object.keys(sp.months).some(function (ym) {
+        var m = sp.months[ym];
+        return !have[ym] || !nums(m, ["rev", "known", "cost"]) || !Array.isArray(m.rows) || m.rows.some(function (r) { return !Array.isArray(r) || r.length !== 4 || typeof r[0] !== "string" || !num(r[1]) || !num(r[2]) || !(r[3] === null || num(r[3])); });
+      });
+    }
+    return false;
   }
   var FALLBACK = { schema: "This dashboard was made with another version of the data format. Please generate it again.", data: "The data of this dashboard is incomplete or damaged. Please generate it again." };
   function fatal(kind) {
