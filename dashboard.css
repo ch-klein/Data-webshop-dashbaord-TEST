@@ -43,6 +43,7 @@ body{margin:0;background:var(--page);color:var(--text);font-family:var(--font);f
 .kpi{position:relative;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:16px 16px 12px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
 .kpi .l{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;order:2}
 .kpi .v{font-size:30px;font-weight:300;color:var(--primary-text);line-height:1.15;margin:2px 0 4px}
+.kpi .v.neg{color:var(--bad)}
 .kpi .d{font-size:12.5px;color:var(--muted)}
 .kpi .ic{position:absolute;right:14px;top:14px;color:var(--muted);opacity:.55}
 .pos{color:var(--good)}.neg{color:var(--bad)}
