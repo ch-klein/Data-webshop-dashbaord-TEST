@@ -133,15 +133,17 @@
     var first = Math.max(0, HAVE.length - 24);
     HAVE.forEach(function (ym, i) { if ((sel[ym] || cmpSet[ym]) && i < first) first = i; });
     var list = HAVE.slice(first);
-    var W = 640, H = 190, pad = 22, vals = list.map(function (ym) { var v = valueFn(ym); return v === null || v === undefined ? 0 : v; });
+    var W = 640, H = 190, pad = 22, raw = list.map(valueFn), vals = raw.map(function (v) { return v === null || v === undefined ? 0 : v; });
     var top = Math.max.apply(null, vals.concat([1])), low = Math.min.apply(null, vals.concat([0])), slot = (W - 10) / list.length;
     var ph = H - pad - 16, base = H - pad - (0 - low) / (top - low) * ph;                       // negatieve waarden (winst): nul staat tussen het minimum en het maximum
     var g = svg("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", role: "img",
                          "aria-label": (label || U.h_trend) + ": " + mname(list[0]) + " \u2013 " + mname(list[list.length - 1]) + ", max " + fmt(top) + (low < 0 ? ", min " + fmt(low) : "") });
     list.forEach(function (ym, i) {
       var v = vals[i], h = Math.abs(v) / (top - low) * ph, c = sel[ym] ? "bar sel" : cmpSet[ym] ? "bar cmp" : "bar";
-      var r = svg("rect", { x: 5 + i * slot + slot * 0.12, y: v < 0 ? base : base - h, width: slot * 0.76, height: Math.max(h, 1), rx: 2, "class": c, "data-ym": ym });
-      var t = svg("title", {}); t.textContent = mname(ym) + ": " + fmt(v); r.appendChild(t); g.appendChild(r);
+      if (raw[i] !== null && raw[i] !== undefined) {                                       // een maand zonder gegevens krijgt geen staaf (anders lijkt het nul)
+        var r = svg("rect", { x: 5 + i * slot + slot * 0.12, y: v < 0 ? base : base - h, width: slot * 0.76, height: Math.max(h, 1), rx: 2, "class": c, "data-ym": ym });
+        var t = svg("title", {}); t.textContent = mname(ym) + ": " + fmt(v); r.appendChild(t); g.appendChild(r);
+      }
       if (list.length <= 14 || i % 3 === 0 || ym.slice(5) === "01") {
         var tx = svg("text", { x: 5 + i * slot + slot / 2, y: H - 6, "text-anchor": "middle", "class": "axis" });
         tx.textContent = mshort(ym) + (ym.slice(5) === "01" || i === 0 ? " " + ym.slice(2, 4) : ""); g.appendChild(tx);

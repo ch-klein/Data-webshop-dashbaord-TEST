@@ -50,6 +50,14 @@
         return Array.isArray(r) && r.length === 4 && [0, 1, 2].every(function (i) { return num(r[i]) && r[i] % 1 === 0; }) && (r[3] === null || num(r[3]));
       });
     })) return true;
+    if (perMonth("shipping", function (m) {
+      var days = null;
+      return obj(m) && sized(m, 12, 40) && Object.keys(m).every(function (n) {
+        var r = m[n], f = Array.isArray(r) && r.length === 5 && r[4] === null;
+        if (days === null) days = f; else if (days !== f) return false;
+        return Array.isArray(r) && r.length === 5 && [0, 1, 2, 3].every(function (i) { return num(r[i]); }) && r[0] >= 1 && r[0] % 1 === 0 && r[3] % 1 === 0 && r[3] <= r[0] && (r[4] === null || (num(r[4]) && r[4] <= 60));
+      });
+    })) return true;
     var sp = d.shop_profit;
     if (sp !== undefined) {
       if (!obj(sp) || typeof sp.prices !== "boolean" || !obj(sp.months)) return true;
@@ -57,6 +65,11 @@
         var m = sp.months[ym];
         return !have[ym] || !nums(m, ["rev", "known", "cost"]) || !Array.isArray(m.rows) || m.rows.some(function (r) { return !Array.isArray(r) || r.length !== 4 || typeof r[0] !== "string" || !num(r[1]) || !num(r[2]) || !(r[3] === null || num(r[3])); });
       })) return true;
+    }
+    var sg = d.shop_goals;
+    if (sg !== undefined) {
+      if (!obj(sg) || !Object.keys(sg).length) return true;
+      if (Object.keys(sg).some(function (k) { return ["orders", "revenue", "aov", "margin_pct"].indexOf(k) < 0 || !num(sg[k]) || !(sg[k] > 0) || (k === "margin_pct" && sg[k] > 100); })) return true;
     }
     var ld = d.layout_default;
     if (ld !== undefined) {

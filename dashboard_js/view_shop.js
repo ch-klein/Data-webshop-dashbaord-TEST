@@ -42,6 +42,7 @@
     kc.appendChild(shopKpis(k, [[U.sh_k_orders, A.orders, B && B.orders, n0], [U.sh_k_revenue, A.revenue, B && B.revenue, eur], [U.sh_k_aov, aov(A), B && B.orders ? aov(B) : null, eur],
                                 [U.sh_k_ship, A.shipping, B && B.shipping, eur], [U.sh_k_disc, A.discount, B && B.discount, eur], [U.sh_k_cancel, A.cancelled, B && B.cancelled, n0]]));
     content.appendChild(kc);
+    if (D.shop_goals) shopGoals(content, k, al, A);
     // tegenover Analytics
     var vc = el("section", "card"); vc.appendChild(panelHead(U.sh_h_vs));
     var gc = 0, gr = 0; al.a.forEach(function (ym) { gc += byYm[ym] ? byYm[ym].c : 0; gr += byYm[ym] ? byYm[ym].r : 0; });
@@ -191,30 +192,16 @@
       var every = function (months) { return months.every(function (ym) { return after(ym) !== null; }); };
       var allOk = adsOk && every(al.a), allB = !!B && every(al.b);
       if (allOk) list.push([U.pr_k_after_all, A.known - A.cost - A.ads - A.fees, allB ? B.known - B.cost - B.ads - B.fees : null, eur]);
+      var sn = allOk ? shipNet(al.a) : null, snb = allB ? shipNet(al.b) : null, base = A.known - A.cost - A.ads - A.fees;
+      if (sn !== null) list.push([U.pr_k_after_ship, base - sn, snb !== null ? B.known - B.cost - B.ads - B.fees - snb : null, eur]);
       kc.appendChild(shopKpis(k, list));
       kc.appendChild(note(U.pr_scope));
       if (allOk) kc.appendChild(note(U.pr_all_note));
+      if (sn !== null) kc.appendChild(note(U.pr_ship_note));
       if (A.ads > 0 && !adsOk) kc.appendChild(note(U.pr_ads_cover));
       if (cov < 100) kc.appendChild(note(U.pr_cover_note.replace("{p}", function () { return pct(cov, 0); })));
       content.appendChild(kc);
-      // per kanaal: break-even rendement en winst na advertentie, met de gemiddelde marge van de hele shop als aanname
-      if (adsOk && D.ads && D.channel_stats) {
-        var cc = el("section", "card"); cc.appendChild(panelHead(U.pr_h_channels));
-        var cost = {}, rev = {}, mg = margin(A) / 100;
-        al.a.forEach(function (ym) {
-          var a = D.ads[ym] ? D.ads[ym].c : {}, cs = D.channel_stats[ym] || {};
-          for (var ch in a) { cost[ch] = (cost[ch] || 0) + a[ch][0]; rev[ch] = (rev[ch] || 0) + (cs[ch] ? cs[ch][1] : 0); }
-        });
-        var chans = Object.keys(cost).filter(function (ch) { return cost[ch] > 0; }).sort(function (x, y) { return cost[y] - cost[x]; });
-        if (chans.length && mg > 0) {
-          cc.appendChild(pickTable(U.pr_ch_th, chans.map(function (ch) {
-            var roas = cost[ch] ? rev[ch] / cost[ch] : 0, net = rev[ch] * mg - cost[ch];
-            return { key: ch, cells: [ch, eur(cost[ch]), eur(rev[ch]), roas.toLocaleString(LOC, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "\u00d7",
-                                      (1 / mg).toLocaleString(LOC, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "\u00d7", { t: (net >= 0 ? "" : "\u2212") + eur(Math.abs(net)), cls: "num " + (net >= 0 ? "pos" : "neg") }] };
-          }), null));
-          cc.appendChild(note(U.pr_ch_note)); content.appendChild(cc);
-        }
-      }
+      if (adsOk) shopChannels(content, al, margin(A) / 100);                  // rendement per advertentiekanaal tegenover break-even (view_shop4.js)
       if (allOk) {
         var neg = al.a.filter(function (ym) { var v = after(ym); return v !== null && v < 0; }).length;
         var ac = el("section", "card"); ac.appendChild(panelHead(U.pr_h_after_all)); content.appendChild(ac);
@@ -241,9 +228,11 @@
     if (D.shop) tabs.push("orders");
     if (D.funnel) tabs.push("funnel");
     if (D.product_funnel || D.shop_lines) tabs.push("products");
+    if (D.shop_lines) tabs.push("prices", "season");
     if (D.coupons) tabs.push("coupons");
     if (D.stock) tabs.push("stock");
     if (D.payments) tabs.push("payments");
+    if (D.shipping) tabs.push("shipping");
     if (D.shop && shopHasReturns()) tabs.push("returns", "customers");
     if (D.shop_profit) tabs.push("profit");
     if (tabs.indexOf(SHOP_TAB) < 0) SHOP_TAB = tabs[0];
@@ -262,7 +251,10 @@
     if (SHOP_TAB === "products") { shopProducts(content, k); return; }
     if (SHOP_TAB === "coupons") { shopCoupons(content, k); return; }
     if (SHOP_TAB === "stock") { shopStock(content, k); return; }
+    if (SHOP_TAB === "season") { shopSeason(content, k); return; }
+    if (SHOP_TAB === "prices") { shopPrices(content, k); return; }
     if (SHOP_TAB === "payments") { shopPayments(content, k); return; }
+    if (SHOP_TAB === "shipping") { shopShipping(content, k); return; }
     var al = alignedWith(k, D.shop);
     if (!al.a.length) { content.appendChild(el("p", "muted", U.sh_no_data)); return; }
     if (al.have < al.of) content.appendChild(note(U.parts_note.replace("{n}", al.have).replace("{t}", al.of)));
@@ -271,4 +263,4 @@
     else if (SHOP_TAB === "customers") shopCustomers(content, k, al, A, B);
     else shopOrders(content, k, al, A, B);
   }
-  VIEWS.push({ id: "shop", icon: "cart", label: "n_shop", render: renderShop, needs: function () { return !!D.shop || !!D.shop_profit || !!D.funnel || !!D.product_funnel || !!D.shop_lines || !!D.coupons || !!D.stock || !!D.payments; } });
+  VIEWS.push({ id: "shop", icon: "cart", label: "n_shop", render: renderShop, needs: function () { return !!D.shop || !!D.shop_profit || !!D.funnel || !!D.product_funnel || !!D.shop_lines || !!D.coupons || !!D.stock || !!D.payments || !!D.shipping; } });

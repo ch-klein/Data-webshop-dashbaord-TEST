@@ -79,3 +79,26 @@
       return payTries(t) ? payLoss(t) : null;
     }, p1, U.py_h_trend));
   }
+
+  // ---------- weergave: Webshop, Doelen (onder de kerncijfers van Bestellingen) ----------
+  // Doelen voor de webshop uit de config: bestellingen en omzet per maand (voor de periode: maanddoel maal aantal maanden); orderwaarde en marge zijn een niveau.
+  function shopGoals(content, k, al, A) {
+    var G = D.shop_goals, n = al.a.length, card = el("section", "card"); card.appendChild(panelHead(U.wg_h)); content.appendChild(card);
+    card.appendChild(note(U.wg_hint.replace("{n}", n)));
+    var P = D.shop_profit ? profitSum(al.a) : null, cov = P && P.rev ? P.known / P.rev * 100 : 0, margin = P && P.known ? (P.known - P.cost) / P.known * 100 : null;
+    var defs = [["orders", U.wg_orders, n0, true, A.orders], ["revenue", U.wg_revenue, eur, true, A.revenue], ["aov", U.wg_aov, eur, false, shopDiv(A.revenue, A.orders)],
+                ["margin_pct", U.wg_margin, function (x) { return pct(x, 1); }, false, margin]];
+    var rows = [], items = [], hidden = false;
+    defs.forEach(function (d) {
+      var g = G[d[0]]; if (g === undefined) return;
+      if (d[0] === "margin_pct" && (margin === null || cov < 90)) { hidden = true; return; }
+      var target = d[3] ? g * n : g, actual = d[4], ratio = target ? actual / target * 100 : 0;
+      rows.push({ key: d[0], cells: [d[1], d[2](g), d[3] ? d[2](target) : U.none, d[2](actual), { t: pct(ratio, 0), cls: "num " + (ratio >= 100 ? "pos" : "neg") },
+                                     { t: ratio >= 100 ? U.wg_met : U.wg_open.replace("{p}", function () { return pct(100 - ratio, 0); }), cls: "txt" }] });
+      items.push({ label: d[1], fill: ratio, center: pct(ratio, 0), sub: d[2](actual) + " / " + d[2](target) });
+    });
+    if (items.length && isNeon()) card.appendChild(neonRow(items));
+    if (rows.length) card.appendChild(pickTable(U.wg_th, rows, null));
+    if (hidden) card.appendChild(note(U.wg_margin_hidden));
+    card.appendChild(note(U.wg_note));
+  }
