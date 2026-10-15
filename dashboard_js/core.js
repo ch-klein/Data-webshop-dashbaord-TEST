@@ -53,10 +53,10 @@
     var sp = d.shop_profit;
     if (sp !== undefined) {
       if (!obj(sp) || typeof sp.prices !== "boolean" || !obj(sp.months)) return true;
-      return Object.keys(sp.months).some(function (ym) {
+      if (Object.keys(sp.months).some(function (ym) {
         var m = sp.months[ym];
         return !have[ym] || !nums(m, ["rev", "known", "cost"]) || !Array.isArray(m.rows) || m.rows.some(function (r) { return !Array.isArray(r) || r.length !== 4 || typeof r[0] !== "string" || !num(r[1]) || !num(r[2]) || !(r[3] === null || num(r[3])); });
-      });
+      })) return true;
     }
     var ld = d.layout_default;
     if (ld !== undefined) {
